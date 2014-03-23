@@ -19,6 +19,7 @@ has 'path'     => ( isa => 'ExistingPath', is => 'ro' );
 has 'filename' => ( isa => 'ExistingPath', is => 'ro' );
 
 sub BUILD {
+    no warnings 'experimental::smartmatch';
     my ( $self, $params ) = @_;
     $self->meta->get_attribute('filename')->set_value( $self, $self->path . '/contents.js' );
     if ( $self->filename ) {
