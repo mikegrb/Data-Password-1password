@@ -4,16 +4,21 @@ use Moose;
 use namespace::autoclean;
 
 use Data::Dumper;
+use Crypt::PBKDF2;
 use MIME::Base64;
 use Data::Password::1password::Types;
 
+use bytes;
+
+# TODO: should probably use unpack instead of use bytes and substr etc
+
 with 'Data::Password::1password::Roles::json';
 
-has 'identifier' => ( isa => 'Str', is => 'ro' );
-has 'level'      => ( isa => 'Str', is => 'ro' );
-has 'data'       => ( isa => 'Str', is => 'ro' );
-has 'validation' => ( isa => 'Str', is => 'ro' );
-has 'master_key' => ( isa => 'Str', is => 'ro' );
+has 'identifier'  => ( isa => 'Str', is => 'ro' );
+has 'level'       => ( isa => 'Str', is => 'ro' );
+has 'data'        => ( isa => 'Str', is => 'ro' );
+has 'validation'  => ( isa => 'Str', is => 'ro' );
+has 'master_pass' => ( isa => 'Str', is => 'ro' );
 
 has 'encrypted_key' => (
     isa     => 'Str',
@@ -22,11 +27,15 @@ has 'encrypted_key' => (
     builder => sub { decode_base64( $_[0]->data ) } );
 
 has 'salt' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_get_salt' );
-has 'iv' => ( isa => 'Str', is => 'ro' );;
+
+has 'intermediate_key' => (
+    isa     => 'HashRef',
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_get_intermediate_key'
+);
 
 sub _get_salt {
-    use bytes;
-    # TODO: should probably use unpack instead of use bytes and substr etc
 
     my $self = shift;
 
@@ -36,6 +45,17 @@ sub _get_salt {
     $self->meta->get_attribute('encrypted_key')
         ->set_value( substr( $key, 16 ) );
     return substr $key, 8, 16;
+}
+
+sub _get_intermediate_key {
+    my $self       = shift;
+    my $pbkdf2     = Crypt::PBKDF2->new( outlen => 32, iterations => 1000 );
+    my $key_and_iv = $pbkdf2->PBKDF2( $self->salt, $self->master_pass );
+
+    my $key = substr( $key_and_iv, 0, 16 );
+    my $iv = substr( $key_and_iv, 16 );
+
+    return { key => $key, iv => $iv };
 }
 
 1;
