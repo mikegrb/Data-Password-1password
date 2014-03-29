@@ -7,6 +7,7 @@ use Data::Dumper;
 use Crypt::CBC;
 use MIME::Base64;
 use Crypt::PBKDF2;
+use Crypt::Digest::MD5 'md5';
 use Crypt::Cipher::AES;
 use Data::Password::1password::Types;
 
@@ -28,7 +29,8 @@ has 'encrypted_key' => (
     lazy    => 1,
     builder => sub { decode_base64( $_[0]->data ) } );
 
-has 'salt' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_get_salt' );
+has 'salt' =>
+    ( isa => 'Str', is => 'ro', lazy => 1, builder => '_get_key_salt' );
 
 has 'intermediate_key' => (
     isa     => 'ArrayRef',
@@ -37,28 +39,23 @@ has 'intermediate_key' => (
     builder => '_get_intermediate_key'
 );
 
-has 'key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key');
+has 'key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key' );
 
 sub decrypt {
-    my ($self, $encrypted, $b64)  = @_;
+    my ( $self, $encrypted, $b64 ) = @_;
 
     my ( $salt, $data )
-        = @{ $b64
-        ? _salt_from_b64($encrypted)
-        : _salt_from_string($encrypted) };
-    # todo key, iv via some md5 stuffs
-    # aes decrypt
-    # strip padding
+        = $b64 ? _salt_from_b64($encrypted) : _salt_from_string($encrypted);
+    my ( $key, $iv ) = _derive_md5( $self->key, $salt );
+    return aes_decrypt( $key, $iv, $data );
 }
 
-sub _get_salt {
+sub _get_key_salt {
     my $self = shift;
 
+    my ( $salt, $key ) = _salt_from_string( $self->data );
 
-    my ( $salt, $key ) = @{ _salt_from_string( $self->data ) };
-
-    $self->meta->get_attribute('encrypted_key')
-        ->set_value( $key );
+    $self->meta->get_attribute('encrypted_key')->set_value($key);
 
     return $salt;
 }
@@ -67,19 +64,27 @@ sub _get_intermediate_key {
     my $self       = shift;
     my $pbkdf2     = Crypt::PBKDF2->new( outlen => 32, iterations => 1000 );
     my $key_and_iv = $pbkdf2->PBKDF2( $self->salt, $self->master_pass );
-
-    my $key = substr( $key_and_iv, 0, 16 );
-    my $iv = substr( $key_and_iv, 16 );
-
-    return [ $key, $iv ];
+    return $key_and_iv;
 }
 
 sub _decrypt_key {
     my $self = shift;
-    my ( $key, $iv ) = @{ $self->intermediate_key() };
+    my ( $key, $iv ) = _split_key_and_iv( $self->intermediate_key() );
+    return _aes_decrypt( $key, $iv, $self->encrypted_key() );
+}
+
+sub _aes_decrypt {
+    my ( $key, $iv, $data ) = @_;
     my $cbc
         = Crypt::CBC->new( -cipher => 'Cipher::AES', -key => $key, -iv => $iv );
-    return $cbc->decrypt( $self->encrypted_key() );
+    return _strip_padding( $cbc->decrypt($data) );
+}
+
+sub _strip_padding {
+    my $string = shift;
+    my $padding_size = ord( substr( $string, -1 ) );
+    return $string if $padding_size >= 16;
+    return substr( $string, -1 * $padding_size );
 }
 
 sub _salt_from_string {
@@ -90,12 +95,30 @@ sub _salt_from_string {
     my $salt = substr( $string, 8, 16 );
     my $data = substr( $string, 16 );
 
-    return [ $salt, $data ];
+    return $salt, $data;
 }
 
 sub _salt_from_b64 {
     my $data = shift;
     return _salt_from_string( decode_base64($data) );
+}
+
+sub _derive_md5 {
+    my ( $key, $salt ) = @_;
+    $key = substr $key, 0, -16;
+    my ( $key_and_iv, $prev );
+    while ( length($key_and_iv) < 32 ) {
+        $prev = md5( $prev . $key . $salt );
+        $key_and_iv .= $prev;
+    }
+    return _split_key_and_iv($key_and_iv);
+}
+
+sub _split_key_and_iv {
+    my $key_and_iv = shift;
+    my $key        = substr( $key_and_iv, 0, 16 );
+    my $iv         = substr( $key_and_iv, 16 );
+    return ( $key, $iv );
 }
 
 1;
