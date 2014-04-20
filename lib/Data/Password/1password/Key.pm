@@ -17,17 +17,21 @@ use bytes;
 
 with 'Data::Password::1password::Roles::json';
 
+# from encryptionKeys.js
 has 'identifier'  => ( isa => 'Str', is => 'ro' );
 has 'level'       => ( isa => 'Str', is => 'ro' );
 has 'data'        => ( isa => 'Str', is => 'ro' );
 has 'validation'  => ( isa => 'Str', is => 'ro' );
+# end attributs from encryptionKeys.js
+
 has 'master_pass' => ( isa => 'Str', is => 'ro' );
 
 has 'encrypted_key' => (
     isa     => 'Str',
     is      => 'ro',
     lazy    => 1,
-    builder => sub { decode_base64( $_[0]->data ) } );
+    builder => '_build_encrypted_key'
+);
 
 has 'salt' =>
     ( isa => 'Str', is => 'ro', lazy => 1, builder => '_get_key_salt' );
@@ -40,6 +44,8 @@ has 'intermediate_key' => (
 );
 
 has 'key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key' );
+
+sub _build_encrypted_key { return decode_base64( $_[0]->data ) }
 
 sub decrypt {
     my ( $self, $encrypted, $b64 ) = @_;
@@ -122,4 +128,3 @@ sub _split_key_and_iv {
 }
 
 1;
-
