@@ -24,9 +24,7 @@ sub _json_from_file {
 
 sub _build_from_data {
     my ( $self, $data ) = @_;
-    print Dumper $data;
     for ( keys %$data ) {
-        warn $_;
         $self->meta->get_attribute($_)->set_value( $self, $data->{$_} );
     }
 
