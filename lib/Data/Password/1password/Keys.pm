@@ -32,9 +32,18 @@ has 'levels' => (
     is      => 'ro',
     isa     => 'HashRef[Str]',
     handles => { get_level_key_id => 'get' },
+    lazy    => 1,
+    builder => '_build_levels',
+);
 );
 
 sub _build_filename { return shift->path . '/data/default/encryptionKeys.js' }
+
+sub _build_levels {
+    my $self = shift;
+    $self->keys;
+    return $self->{levels};
+}
 
 sub _build_keys {
     my $self    = shift;
