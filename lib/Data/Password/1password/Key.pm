@@ -18,13 +18,12 @@ use bytes;
 with 'Data::Password::1password::Roles::json';
 
 # from encryptionKeys.js
-has 'identifier'  => ( isa => 'Str', is => 'ro' );
-has 'level'       => ( isa => 'Str', is => 'ro' );
-has 'data'        => ( isa => 'Str', is => 'ro' );
-has 'validation'  => ( isa => 'Str', is => 'ro' );
-# end attributs from encryptionKeys.js
+has 'identifier' => ( isa => 'Str', is => 'ro' );
+has 'level'      => ( isa => 'Str', is => 'ro' );
+has 'data'       => ( isa => 'Str', is => 'ro' );
+has 'validation' => ( isa => 'Str', is => 'ro' );
 
-has 'master_pass' => ( isa => 'Str', is => 'ro' );
+# end attributs from encryptionKeys.js
 
 has 'encrypted_key' => (
     isa     => 'Str',
@@ -44,6 +43,13 @@ has 'intermediate_key' => (
 );
 
 has 'key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key' );
+
+has 'root' => (
+    is       => 'ro',
+    isa      => 'Data::Password::1password',
+    weak_ref => 1,
+    reader   => '_root'
+);
 
 sub _build_encrypted_key { return decode_base64( $_[0]->data ) }
 
@@ -69,7 +75,7 @@ sub _get_key_salt {
 sub _get_intermediate_key {
     my $self       = shift;
     my $pbkdf2     = Crypt::PBKDF2->new( outlen => 32, iterations => 1000 );
-    my $key_and_iv = $pbkdf2->PBKDF2( $self->salt, $self->master_pass );
+    my $key_and_iv = $pbkdf2->PBKDF2( $self->salt, $self->_root->master_key );
     return $key_and_iv;
 }
 

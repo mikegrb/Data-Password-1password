@@ -35,6 +35,12 @@ has 'levels' => (
     lazy    => 1,
     builder => '_build_levels',
 );
+
+has 'root' => (
+    is       => 'ro',
+    isa      => 'Data::Password::1password',
+    weak_ref => 1,
+    reader   => '_root'
 );
 
 sub _build_filename { return shift->path . '/data/default/encryptionKeys.js' }
@@ -57,7 +63,8 @@ sub _build_keys {
     my $keys = {};
     for my $key ( @{ $content->{list} } ) {
         $keys->{ $key->{identifier} }
-            = Data::Password::1password::Key->new(%$key);
+            = Data::Password::1password::Key->new( %$key,
+            root => $self->_root );
     }
 
     return $keys;
