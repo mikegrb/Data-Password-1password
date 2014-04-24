@@ -25,23 +25,6 @@ has 'validation' => ( isa => 'Str', is => 'ro' );
 
 # end attributs from encryptionKeys.js
 
-has 'encrypted_key' => (
-    isa     => 'Str',
-    is      => 'ro',
-    lazy    => 1,
-    builder => '_build_encrypted_key'
-);
-
-has 'salt' =>
-    ( isa => 'Str', is => 'ro', lazy => 1, builder => '_get_key_salt' );
-
-has 'intermediate_key' => (
-    isa     => 'ArrayRef',
-    is      => 'ro',
-    lazy    => 1,
-    builder => '_get_intermediate_key'
-);
-
 has 'key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key' );
 
 has 'root' => (
@@ -51,7 +34,19 @@ has 'root' => (
     reader   => '_root'
 );
 
-sub _build_encrypted_key { return decode_base64( $_[0]->data ) }
+sub _decrypt_key {
+    my $self = shift;
+
+    my ( $salt, $decrypt_key ) = _salt_from_b64( $self->data );
+
+    my $pbkdf2 = Crypt::PBKDF2->new( outlen => 32, iterations => 1000 );
+
+    my ( $key, $iv )
+        = _split_key_and_iv(
+        $pbkdf2->PBKDF2( $salt, $self->_root->master_key ) );
+
+    return _aes_decrypt( $key, $iv, $decrypt_key );
+}
 
 sub decrypt {
     my ( $self, $encrypted, $b64 ) = @_;
@@ -60,29 +55,6 @@ sub decrypt {
         = $b64 ? _salt_from_b64($encrypted) : _salt_from_string($encrypted);
     my ( $key, $iv ) = _derive_md5( $self->key, $salt );
     return aes_decrypt( $key, $iv, $data );
-}
-
-sub _get_key_salt {
-    my $self = shift;
-
-    my ( $salt, $key ) = _salt_from_string( $self->data );
-
-    $self->meta->get_attribute('encrypted_key')->set_value($key);
-
-    return $salt;
-}
-
-sub _get_intermediate_key {
-    my $self       = shift;
-    my $pbkdf2     = Crypt::PBKDF2->new( outlen => 32, iterations => 1000 );
-    my $key_and_iv = $pbkdf2->PBKDF2( $self->salt, $self->_root->master_key );
-    return $key_and_iv;
-}
-
-sub _decrypt_key {
-    my $self = shift;
-    my ( $key, $iv ) = _split_key_and_iv( $self->intermediate_key() );
-    return _aes_decrypt( $key, $iv, $self->encrypted_key() );
 }
 
 sub _aes_decrypt {
