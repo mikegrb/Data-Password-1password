@@ -76,10 +76,10 @@ sub _salt_from_string {
 
     return "\x00" x 16 unless substr( $string, 0, 8 ) eq 'Salted__';
 
-    my $salt = substr( $string, 8, 16 );
+    my $salt = substr( $string, 8, 8 );
     my $data = substr( $string, 16 );
 
-    return $salt, $data;
+    return ($salt, $data);
 }
 
 sub _salt_from_b64 {
