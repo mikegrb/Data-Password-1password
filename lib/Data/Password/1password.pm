@@ -12,7 +12,7 @@ use Data::Password::1password::Keys;
 
 has 'path' => ( isa => 'ExistingPath', is => 'ro' );
 
-has 'master_key' => ( isa => 'Str', is => 'ro', required => 1 );
+has 'master_pass' => ( isa => 'Str', is => 'ro', required => 1 );
 
 has 'contents' => (
     isa     => 'Data::Password::1password::Contents',

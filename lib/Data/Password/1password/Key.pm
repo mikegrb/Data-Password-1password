@@ -43,7 +43,7 @@ sub _decrypt_key {
 
     my ( $key, $iv )
         = _split_key_and_iv(
-        $pbkdf2->PBKDF2( $salt, $self->_root->master_key ) );
+        $pbkdf2->PBKDF2( $salt, $self->_root->master_pass ) );
 
     return _aes_decrypt( $key, $iv, $decrypt_key );
 }
