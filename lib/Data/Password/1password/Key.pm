@@ -4,11 +4,12 @@ use Moose;
 use namespace::autoclean;
 
 use Data::Dumper;
-use Crypt::CBC;
+use Data::HexDump;
 use MIME::Base64;
 use Crypt::PBKDF2;
 use Crypt::Digest::MD5 'md5';
 use Crypt::Cipher::AES;
+use Crypt::Mode::CBC;
 use Data::Password::1password::Types;
 
 use bytes;
@@ -39,7 +40,7 @@ sub _decrypt_key {
 
     my ( $salt, $decrypt_key ) = _salt_from_b64( $self->data );
 
-    my $pbkdf2 = Crypt::PBKDF2->new( outlen => 32, iterations => 1000 );
+    my $pbkdf2 = Crypt::PBKDF2->new( output_len => 32, iterations => 1000 );
 
     my ( $key, $iv )
         = _split_key_and_iv(
@@ -54,14 +55,13 @@ sub decrypt {
     my ( $salt, $data )
         = $b64 ? _salt_from_b64($encrypted) : _salt_from_string($encrypted);
     my ( $key, $iv ) = _derive_md5( $self->key, $salt );
-    return aes_decrypt( $key, $iv, $data );
+    return _aes_decrypt( $key, $iv, $data );
 }
 
 sub _aes_decrypt {
     my ( $key, $iv, $data ) = @_;
-    my $cbc
-        = Crypt::CBC->new( -cipher => 'Cipher::AES', -key => $key, -iv => $iv );
-    return _strip_padding( $cbc->decrypt($data) );
+    my $m = Crypt::Mode::CBC->new('AES');
+    return $m->decrypt( $data, $key, $iv );    # strip padding?
 }
 
 sub _strip_padding {
@@ -100,8 +100,7 @@ sub _derive_md5 {
 
 sub _split_key_and_iv {
     my $key_and_iv = shift;
-    my $key        = substr( $key_and_iv, 0, 16 );
-    my $iv         = substr( $key_and_iv, 16 );
+    my ($key, $iv) = unpack('(a16)2', $key_and_iv);
     return ( $key, $iv );
 }
 
