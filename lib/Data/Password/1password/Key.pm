@@ -49,6 +49,7 @@ sub decrypt {
 
     my ( $salt, $data )
         = $b64 ? _salt_from_b64($encrypted) : _salt_from_string($encrypted);
+
     my ( $key, $iv ) = _derive_md5( $self->key, $salt );
     return _aes_decrypt( $key, $iv, $data );
 }
@@ -56,14 +57,7 @@ sub decrypt {
 sub _aes_decrypt {
     my ( $key, $iv, $data ) = @_;
     my $m = Crypt::Mode::CBC->new('AES');
-    return $m->decrypt( $data, $key, $iv );    # strip padding?
-}
-
-sub _strip_padding {
-    my $string = shift;
-    my $padding_size = ord( substr( $string, -1 ) );
-    return $string if $padding_size >= 16;
-    return substr( $string, -1 * $padding_size );
+    return $m->decrypt( $data, $key, $iv );
 }
 
 sub _salt_from_string {
