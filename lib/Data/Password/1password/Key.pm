@@ -26,7 +26,7 @@ has 'validation' => ( isa => 'Str', is => 'ro' );
 
 # end attributs from encryptionKeys.js
 
-has 'key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key' );
+has '_decrypted_key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key' );
 
 has 'root' => (
     is       => 'ro',
@@ -45,12 +45,11 @@ sub _decrypt_key {
 }
 
 sub decrypt {
-    my ( $self, $encrypted, $b64 ) = @_;
+    my ( $self, $encrypted ) = @_;
 
-    my ( $salt, $data )
-        = $b64 ? _salt_from_b64($encrypted) : _salt_from_string($encrypted);
+    my ( $salt, $data ) = _salt_from_b64($encrypted);
+    my ( $key, $iv ) = _derive_md5( $self->_decrypted_key, $salt );
 
-    my ( $key, $iv ) = _derive_md5( $self->key, $salt );
     return _aes_decrypt( $key, $iv, $data );
 }
 
@@ -63,7 +62,7 @@ sub _aes_decrypt {
 sub _salt_from_string {
     my $string = shift;
 
-    return "\x00" x 16 unless substr( $string, 0, 8 ) eq 'Salted__';
+    die "data malformed?!" unless substr( $string, 0, 8 ) eq 'Salted__';
 
     my $salt = substr( $string, 8, 8 );
     my $data = substr( $string, 16 );
