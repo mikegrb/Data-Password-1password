@@ -9,6 +9,8 @@ use Data::Dumper;
 use Data::Password::1password::Types;
 use Data::Password::1password::WebForm::Data;
 
+with 'Data::Password::1password::Roles::PasswordField';
+
 has [qw(uuid title domain)] => ( isa => 'Str', is => 'ro' );
 has 'filename' => ( isa => 'ExistingPath', is => 'ro' );
 has 'root' =>
