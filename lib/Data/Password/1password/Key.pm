@@ -77,8 +77,8 @@ sub _salt_from_b64 {
 
 sub _derive_md5 {
     my ( $key, $salt ) = @_;
-    $key = substr $key, 0, -16;
-    my ( $key_and_iv, $prev );
+
+    my ( $key_and_iv, $prev ) = ('', '');
     while ( length($key_and_iv) < 32 ) {
         $prev = md5( $prev . $key . $salt );
         $key_and_iv .= $prev;
