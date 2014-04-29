@@ -1,0 +1,3 @@
+ * verify key on decrypt
+ * finish content types
+ * make use of coercion in a few places
