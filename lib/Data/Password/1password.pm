@@ -29,7 +29,10 @@ has 'keys' => (
 
 sub _build_contents {
     my $self = shift;
-    return Data::Password::1password::Contents->new( path => $self->path );
+    return Data::Password::1password::Contents->new(
+        path => $self->path,
+        root => $self
+    );
 }
 
 sub _build_keys {

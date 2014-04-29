@@ -12,13 +12,11 @@ use Data::Password::1password::WebForm;
 
 with 'Data::Password::1password::Roles::json';
 
-has 'contents' => (
-    isa => 'ArrayRef[]',
-    is  => 'ro',
-);
-
+has 'contents' => ( isa => 'ArrayRef[]', is => 'ro', );
 has 'path'     => ( isa => 'ExistingPath', is => 'ro' );
 has 'filename' => ( isa => 'ExistingPath', is => 'ro' );
+has 'root' =>
+    ( isa => 'Data::Password::1password', is => 'ro', weak_ref => 1 );
 
 sub BUILD {
     no warnings 'experimental::smartmatch';
@@ -37,6 +35,7 @@ sub BUILD {
             $class = 'Data::Password::1password::' . $class;
             push @content_objs,
                 $class->new(
+                root     => $self->root,
                 filename => $self->path
                     . '/data/default/'
                     . $data{uuid}
