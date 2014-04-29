@@ -6,7 +6,7 @@ use namespace::autoclean;
 use Data::Dumper;
 use Data::HexDump;
 use MIME::Base64;
-use Crypt::PBKDF2;
+use Crypt::KeyDerivation 'pbkdf2';
 use Crypt::Digest::MD5 'md5';
 use Crypt::Cipher::AES;
 use Crypt::Mode::CBC;
@@ -37,15 +37,10 @@ has 'root' => (
 
 sub _decrypt_key {
     my $self = shift;
-
     my ( $salt, $decrypt_key ) = _salt_from_b64( $self->data );
-
-    my $pbkdf2 = Crypt::PBKDF2->new( output_len => 32, iterations => 1000 );
-
     my ( $key, $iv )
         = _split_key_and_iv(
-        $pbkdf2->PBKDF2( $salt, $self->_root->master_pass ) );
-
+        pbkdf2( $self->_root->master_pass, $salt, 1000, 'SHA1' ) );
     return _aes_decrypt( $key, $iv, $decrypt_key );
 }
 
