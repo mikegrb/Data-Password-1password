@@ -41,15 +41,23 @@ sub _decrypt_key {
     my ( $key, $iv )
         = _split_key_and_iv(
         pbkdf2( $self->_root->master_pass, $salt, 1000, 'SHA1' ) );
-    return _aes_decrypt( $key, $iv, $decrypt_key );
+    my $decrypted_key = _aes_decrypt( $key, $iv, $decrypt_key );
+
+    die "Bad passphrase!"
+        unless $decrypted_key eq
+        _decrypt( $self->validation, $decrypted_key );
+    return $decrypted_key;
 }
 
 sub decrypt {
     my ( $self, $encrypted ) = @_;
+    return _decrypt( $encrypted, $self->_decrypted_key );
+}
 
-    my ( $salt, $data ) = _salt_from_b64($encrypted);
-    my ( $key, $iv ) = _derive_md5( $self->_decrypted_key, $salt );
-
+sub _decrypt {
+    my ( $encrypted, $decryption_key ) = @_;
+    my ( $salt,      $data )           = _salt_from_b64($encrypted);
+    my ( $key, $iv ) = _derive_md5( $decryption_key, $salt );
     return _aes_decrypt( $key, $iv, $data );
 }
 
