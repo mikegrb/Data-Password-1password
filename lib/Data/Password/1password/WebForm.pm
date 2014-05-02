@@ -9,8 +9,9 @@ use Data::Dumper;
 use Data::Password::1password::Types;
 use Data::Password::1password::WebForm::Data;
 
-with 'Data::Password::1password::Roles::PasswordField';
 with 'Data::Password::1password::Roles::Content';
+with 'Data::Password::1password::Roles::DecryptedData';
+with 'Data::Password::1password::Roles::LoginCreds';
 
 has [qw(uuid title domain)] => ( isa => 'Str', is => 'ro' );
 
