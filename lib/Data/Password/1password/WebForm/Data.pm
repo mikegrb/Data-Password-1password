@@ -8,7 +8,7 @@ use Data::Dumper;
 
 use Data::Password::1password::Types;
 
-with 'Data::Password::1password::Roles::Content';
+with 'Data::Password::1password::Roles::Data';
 
 has [ qw(
         contentsHash location typeName uuid encrypted

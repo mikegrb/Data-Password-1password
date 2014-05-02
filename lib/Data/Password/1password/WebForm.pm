@@ -10,11 +10,10 @@ use Data::Password::1password::Types;
 use Data::Password::1password::WebForm::Data;
 
 with 'Data::Password::1password::Roles::PasswordField';
+with 'Data::Password::1password::Roles::Content';
 
 has [qw(uuid title domain)] => ( isa => 'Str', is => 'ro' );
-has 'filename' => ( isa => 'ExistingPath', is => 'ro' );
-has 'root' =>
-    ( isa => 'Data::Password::1password', is => 'ro', weak_ref => 1 );
+
 has 'data' => (
     isa        => 'Data::Password::1password::WebForm::Data',
     is         => 'ro',
