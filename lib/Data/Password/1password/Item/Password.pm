@@ -8,9 +8,9 @@ use Data::Password::1password::Types;
 use Data::Password::1password::Item::Password::Data;
 
 with 'Data::Password::1password::Roles::Item';
+with 'Data::Password::1password::Roles::DecryptedData';
+with 'Data::Password::1password::Roles::LoginCreds';
 
-has [qw(uuid title domain)] => ( isa => 'Str', is => 'ro' );
-has filename => ( isa => 'ExistingPath', is => 'ro');
 has data     => (
     isa        => 'Data::Password::1password::Item::Password::Data',
     is         => 'ro',
