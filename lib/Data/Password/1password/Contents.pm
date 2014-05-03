@@ -10,6 +10,7 @@ use Data::Password::1password::Types;
 use Data::Password::1password::Item::Password;
 use Data::Password::1password::Item::WebForm;
 use Data::Password::1password::Item::SecureNote;
+use Data::Password::1password::Item::CreditCard;
 
 with 'Data::Password::1password::Roles::json';
 
@@ -33,6 +34,7 @@ sub BUILD {
 
             ( my $class = $item->[1] ) =~ s/^.*\.([^\.]+)$/$1/;
             next unless $class ~~ [ qw(WebForm Password SecureNote) ];
+            next unless $class ~~ [ qw(WebForm Password SecureNote CreditCard) ];
             $class = 'Data::Password::1password::Item::' . $class;
             push @content_objs,
                 $class->new(
