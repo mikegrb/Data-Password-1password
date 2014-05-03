@@ -7,8 +7,8 @@ use Carp;
 use Data::Dumper;
 
 use Data::Password::1password::Types;
-use Data::Password::1password::Password;
-use Data::Password::1password::WebForm;
+use Data::Password::1password::Item::Password;
+use Data::Password::1password::Item::WebForm;
 
 with 'Data::Password::1password::Roles::json';
 
@@ -32,7 +32,7 @@ sub BUILD {
 
             ( my $class = $item->[1] ) =~ s/^.*\.([^\.]+)$/$1/;
             next unless $class ~~ [ 'WebForm', 'Password' ];
-            $class = 'Data::Password::1password::' . $class;
+            $class = 'Data::Password::1password::Item::' . $class;
             push @content_objs,
                 $class->new(
                 root     => $self->root,

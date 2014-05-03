@@ -1,4 +1,4 @@
-package Data::Password::1password::WebForm::Data;
+package Data::Password::1password::Item::WebForm::Data;
 
 use Moose;
 use namespace::autoclean;

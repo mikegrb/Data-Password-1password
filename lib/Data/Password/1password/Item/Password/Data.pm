@@ -1,4 +1,4 @@
-package Data::Password::1password::Password::Data;
+package Data::Password::1password::Item::Password::Data;
 
 use Moose;
 use namespace::autoclean;
