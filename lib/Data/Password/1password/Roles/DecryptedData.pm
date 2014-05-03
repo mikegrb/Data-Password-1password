@@ -4,10 +4,11 @@ use Moose::Role;
 
 use JSON::Any;
 
+has 'decrypted_data' =>
+    ( isa => 'HashRef', is => 'ro', lazy => 1, builder => '_decrypt_data' );
 
-sub decrypted_data {
+sub _decrypt_data {
     my $self = shift;
-
     my $key
         = $self->keyID
         ? $self->root->keys->get_key( $self->keyID )
