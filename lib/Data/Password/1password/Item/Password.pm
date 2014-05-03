@@ -7,7 +7,7 @@ use namespace::autoclean;
 use Data::Password::1password::Types;
 use Data::Password::1password::Item::Password::Data;
 
-with 'Data::Password::1password::Roles::Content';
+with 'Data::Password::1password::Roles::Item';
 
 has [qw(uuid title domain)] => ( isa => 'Str', is => 'ro' );
 has filename => ( isa => 'ExistingPath', is => 'ro');

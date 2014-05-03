@@ -9,7 +9,7 @@ use Data::Dumper;
 use Data::Password::1password::Types;
 use Data::Password::1password::Item::WebForm::Data;
 
-with 'Data::Password::1password::Roles::Content';
+with 'Data::Password::1password::Roles::Item';
 with 'Data::Password::1password::Roles::DecryptedData';
 with 'Data::Password::1password::Roles::LoginCreds';
 

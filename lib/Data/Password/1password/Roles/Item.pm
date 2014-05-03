@@ -1,4 +1,4 @@
-package Data::Password::1password::Roles::Content;
+package Data::Password::1password::Roles::Item;
 
 use Moose::Role;
 
