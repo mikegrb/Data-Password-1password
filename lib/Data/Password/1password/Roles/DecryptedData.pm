@@ -8,7 +8,10 @@ use JSON::Any;
 sub decrypted_data {
     my $self = shift;
 
-    my $key  = $self->root->keys->get_key( $self->keyID );
+    my $key
+        = $self->keyID
+        ? $self->root->keys->get_key( $self->keyID )
+        : $self->root->keys->key_for_level( $self->securityLevel );
     return JSON::Any->jsonToObj( $key->decrypt( $self->encrypted ) );
 }
 
