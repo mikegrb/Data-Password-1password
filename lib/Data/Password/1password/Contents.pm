@@ -9,6 +9,7 @@ use Data::Dumper;
 use Data::Password::1password::Types;
 use Data::Password::1password::Item::Password;
 use Data::Password::1password::Item::WebForm;
+use Data::Password::1password::Item::SecureNote;
 
 with 'Data::Password::1password::Roles::json';
 
@@ -31,7 +32,7 @@ sub BUILD {
             @data{ 'uuid', 'title', 'domain' } = @$item[ 0, 2, 3 ];
 
             ( my $class = $item->[1] ) =~ s/^.*\.([^\.]+)$/$1/;
-            next unless $class ~~ [ 'WebForm', 'Password' ];
+            next unless $class ~~ [ qw(WebForm Password SecureNote) ];
             $class = 'Data::Password::1password::Item::' . $class;
             push @content_objs,
                 $class->new(
