@@ -23,7 +23,8 @@ has 'identifier' => ( isa => 'Str', is => 'ro' );
 has 'level'      => ( isa => 'Str', is => 'ro' );
 has 'data'       => ( isa => 'Str', is => 'ro' );
 has 'validation' => ( isa => 'Str', is => 'ro' );
-
+has 'iterations' =>
+    ( isa => 'Int', is => 'ro', default => sub { return 1000 } );
 # end attributs from encryptionKeys.js
 
 has '_decrypted_key' => ( isa => 'Str', is => 'ro', lazy => 1, builder => '_decrypt_key' );
@@ -40,7 +41,7 @@ sub _decrypt_key {
     my ( $salt, $decrypt_key ) = _salt_from_b64( $self->data );
     my ( $key, $iv )
         = _split_key_and_iv(
-        pbkdf2( $self->_root->master_pass, $salt, 1000, 'SHA1' ) );
+        pbkdf2( $self->_root->master_pass, $salt, $self->iterations, 'SHA1' ) );
     my $decrypted_key = _aes_decrypt( $key, $iv, $decrypt_key );
 
     die "Bad passphrase!"
