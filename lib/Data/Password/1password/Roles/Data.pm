@@ -12,7 +12,7 @@ has [
         contentsHash location typeName uuid encrypted securityLevel
         locationKey keyID )
 ]                  => ( isa => 'Str',          is => 'ro' );
-has 'openContents' => ( isa => 'HashRef',         is => 'ro' );
+has 'openContents' => ( isa => 'HashRef',      is => 'ro' );
 has 'filename'     => ( isa => 'ExistingPath', is => 'ro' );
 has 'trashed'      => ( isa => 'Bool',         is => 'ro' );
 has 'faveIndex'    => ( isa => 'Num',          is => 'ro' );
