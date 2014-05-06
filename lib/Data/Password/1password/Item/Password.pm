@@ -17,10 +17,13 @@ has data     => (
     lazy_build => 1,
     handles    => [ qw(
             contentsHash location typeName encrypted securityLevel
-            locationKey createdAt updatedAt
+            locationKey createdAt updatedAt keyID
             )
     ],
 );
+
+# fields is a more natural name for accessing the data
+sub fields { return shift->decrypted_data }
 
 sub _build_data {
     my $self = shift;
