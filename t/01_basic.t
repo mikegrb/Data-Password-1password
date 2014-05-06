@@ -4,7 +4,7 @@ use FindBin;
 use Test::More;
 use Test::Exception;
 
-use Data::Password::1password;
+BEGIN { use_ok('Data::Password::1password') }
 
 my $keychain_path = $FindBin::Bin . '/data/demo.agilekeychain';
 
@@ -24,7 +24,6 @@ throws_ok { $citiwebform->decrypted_data } qr/Bad passphrase!/,
 
 $opass->master_pass('demo');
 
-is ($citiwebform->username, '852083482143', 'get username');
-is ($citiwebform->password, 'BVxVhnk3CYNMoTxABHhQ', 'get password');
+is (ref $citiwebform->decrypted_data, 'HASH', 'decryption with right key works');
 
 done_testing();
