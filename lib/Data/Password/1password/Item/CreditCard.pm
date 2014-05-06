@@ -18,6 +18,8 @@ has data => (
     ],
 );
 
+sub bank          { return shift->decrypted_data->{bank} }
+sub creditLimit   { return shift->decrypted_data->{creditLimit} }
 sub cardholder    { return shift->decrypted_data->{cardholder} }
 sub ccnum         { return shift->decrypted_data->{ccnum} }
 sub cvv           { return shift->decrypted_data->{cvv} }
