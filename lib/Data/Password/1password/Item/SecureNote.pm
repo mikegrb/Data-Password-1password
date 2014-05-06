@@ -18,7 +18,7 @@ has data => (
         [qw(contentsHash typeName encrypted securityLevel createdAt updatedAt keyID)],
 );
 
-sub note_text {
+sub text {
     my $self = shift;
     return $self->decrypted_data->{notesPlain};
 }
